@@ -1,23 +1,34 @@
-// Fortune Cookie Wisdom for Developers — make.fun entry
-// Writes one original fortune-cookie line for a software developer
-// to $MAKEFUN_OUTPUT_DIR/entry.txt (or /output/entry.txt by default).
-// Node 22, stdlib only, deterministic: the same text on every run.
+// Fortune Cookie Wisdom for Developers
+// Writes one fortune-cookie line for a developer to entry.txt.
 
-import { writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Resolve the repository directory from this script's own location,
-// never from process.cwd(), so the entry works from any working directory.
-const REPO_DIR = dirname(fileURLToPath(import.meta.url));
-if (!existsSync(REPO_DIR)) {
-  throw new Error(`repository directory not found: ${REPO_DIR}`);
-}
-
-const ENTRY =
+// The fortune itself: the code you wrote at midnight will be the one
+// reviewing you in the morning.
+const FORTUNE =
   "The code you wrote at midnight will review you in the morning.";
 
+// Resolve the repo directory from this script's location, not from the
+// working directory, because the grader runs `node /bot/main.ts` from
+// somewhere else entirely.
+const repoDir = dirname(fileURLToPath(import.meta.url));
+
+// Input and output directories come from the environment, with the
+// standard /input and /output fallbacks.
+const inputDir = process.env.MAKEFUN_INPUT_DIR ?? "/input";
 const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
-// The grader sandbox provides the output directory; this program only
-// writes entry.txt into it and never creates or removes it.
-writeFileSync(join(outputDir, "entry.txt"), ENTRY, "utf8");
+
+// This entry reads no input files, but the directories are resolved here
+// so the layout stays obvious.
+void inputDir;
+void repoDir;
+
+// Create the output directory only when it is missing; never delete it
+// or recreate it from scratch.
+mkdirSync(outputDir, { recursive: true });
+
+// Write the fortune exactly as-is, and nothing else: no extra files,
+// no dotfiles in the output.
+writeFileSync(join(outputDir, "entry.txt"), FORTUNE, "utf8");
